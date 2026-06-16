@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Travel Planner Pro - Plataforma inteligente para planificar viajes: información de países, clima, moneda y atracciones turísticas." />
+  <title>Travel Planner Pro</title>
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+
+  <!-- Tipografías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Iconos -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Leaflet (mapa - punto extra) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Estilos propios -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ============ LOADER GLOBAL ============ -->
+  <div id="global-loader" class="loader-overlay" aria-hidden="true">
+    <div class="loader-compass">
+      <i class="fa-solid fa-compass"></i>
+    </div>
+    <p class="loader-text">Explorando el mundo…</p>
+  </div>
+
+  <!-- ============ MÓDULO 1: REGISTRO DEL VIAJERO ============ -->
+  <div id="register-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="register-title">
+    <div class="modal register-card">
+      <div class="register-badge"><i class="fa-solid fa-paper-plane"></i></div>
+      <h2 id="register-title" class="register-title">Tu pasaporte digital</h2>
+      <p class="register-sub">Antes de despegar, cuéntanos quién eres. Guardaremos tus datos en este dispositivo.</p>
+      <form id="register-form" novalidate>
+        <div class="field">
+          <label for="reg-name">Nombre completo</label>
+          <input type="text" id="reg-name" name="name" placeholder="Ej. Carlos Pérez" autocomplete="name" />
+          <span class="error-msg" data-error-for="reg-name"></span>
+        </div>
+        <div class="field">
+          <label for="reg-email">Correo electrónico</label>
+          <input type="email" id="reg-email" name="email" placeholder="tucorreo@ejemplo.com" autocomplete="email" />
+          <span class="error-msg" data-error-for="reg-email"></span>
+        </div>
+        <div class="field">
+          <label for="reg-country">País de residencia</label>
+          <input type="text" id="reg-country" name="country" placeholder="Ej. Colombia" autocomplete="country-name" />
+          <span class="error-msg" data-error-for="reg-country"></span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          <i class="fa-solid fa-plane-departure"></i> Comenzar a viajar
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ NAVBAR ============ -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a href="#dashboard" class="brand">
+        <span class="brand-mark"><i class="fa-solid fa-earth-americas"></i></span>
+        <span class="brand-text">Travel<span class="brand-accent">Planner</span><sup>PRO</sup></span>
+      </a>
+
+      <nav class="nav-links" id="nav-links">
+        <a href="#dashboard"><i class="fa-solid fa-gauge"></i><span>Inicio</span></a>
+        <a href="#search-section"><i class="fa-solid fa-magnifying-glass"></i><span>Explorar</span></a>
+        <a href="#favorites-section"><i class="fa-solid fa-heart"></i><span>Favoritos</span></a>
+        <a href="#history-section"><i class="fa-solid fa-clock-rotate-left"></i><span>Historial</span></a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="theme-toggle" class="icon-btn" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button id="nav-burger" class="icon-btn burger" aria-label="Abrir menú">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ MÓDULO 11: DASHBOARD PRINCIPAL ============ -->
+    <section id="dashboard" class="section hero">
+      <div class="hero-bg" aria-hidden="true"></div>
+      <div class="hero-content">
+        <p class="eyebrow">Tu centro de mando</p>
+        <h1 class="hero-title">Hola, <span id="dash-username">viajero</span> <span class="wave">👋</span></h1>
+        <p class="hero-lead">El mundo entero en una sola pantalla. Busca un país y descubre su clima, moneda, cultura y los lugares que no te puedes perder.</p>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-flag"></i></div>
+            <div class="stat-meta">
+              <span class="stat-number" id="stat-countries">0</span>
+              <span class="stat-label">Países consultados</span>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-heart"></i></div>
+            <div class="stat-meta">
+              <span class="stat-number" id="stat-fav-countries">0</span>
+              <span class="stat-label">Destinos favoritos</span>
+            </div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-camera-retro"></i></div>
+            <div class="stat-meta">
+              <span class="stat-number" id="stat-fav-places">0</span>
+              <span class="stat-label">Atracciones favoritas</span>
+            </div>
+          </article>
+        </div>
+
+        <!-- Estadísticas con Chart.js (punto extra) -->
+        <div class="chart-wrap" id="chart-wrap" hidden>
+          <h3 class="chart-title"><i class="fa-solid fa-chart-simple"></i> Tu actividad de exploración</h3>
+          <canvas id="stats-chart" height="120"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ MÓDULO 2: BUSCADOR DE DESTINOS ============ -->
+    <section id="search-section" class="section">
+      <div class="section-head">
+        <h2><i class="fa-solid fa-compass"></i> Explora un destino</h2>
+        <p>Escribe el nombre de cualquier país del mundo.</p>
+      </div>
+
+      <form id="search-form" class="search-bar" role="search">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="search-input" placeholder="Japón, Francia, Canadá, Brasil, Colombia, Australia…" autocomplete="off" aria-label="Buscar país" />
+        <button type="submit" class="btn btn-primary">Buscar</button>
+      </form>
+
+      <div class="suggestions" id="quick-suggestions">
+        <span class="suggest-label">Sugerencias:</span>
+        <button class="chip" data-country="Japón">Japón</button>
+        <button class="chip" data-country="Francia">Francia</button>
+        <button class="chip" data-country="Canadá">Canadá</button>
+        <button class="chip" data-country="Brasil">Brasil</button>
+        <button class="chip" data-country="Colombia">Colombia</button>
+        <button class="chip" data-country="Australia">Australia</button>
+        <button class="chip geo-chip" id="geo-btn" title="Usar mi ubicación"><i class="fa-solid fa-location-crosshairs"></i> Mi ubicación</button>
+      </div>
+
+      <p id="search-message" class="inline-message" role="alert" hidden></p>
+    </section>
+
+    <!-- ============ ZONA DE RESULTADOS ============ -->
+    <section id="results" class="section results" hidden>
+
+      <!-- MÓDULO 3: INFORMACIÓN GENERAL DEL PAÍS -->
+      <article class="country-panel">
+        <div class="country-flag-wrap">
+          <img id="country-flag" class="country-flag" src="" alt="" />
+          <button id="fav-country-btn" class="fav-toggle" title="Guardar en favoritos" aria-label="Guardar país en favoritos">
+            <i class="fa-regular fa-heart"></i>
+          </button>
+        </div>
+        <div class="country-overview">
+          <h2 id="country-name" class="country-name"></h2>
+          <p id="country-native" class="country-native"></p>
+          <div class="info-cards" id="country-info-cards"></div>
+        </div>
+      </article>
+
+      <div class="results-grid">
+        <!-- MÓDULO 4: CLIMA DEL DESTINO -->
+        <article class="data-card weather-card" id="weather-card">
+          <header class="data-card-head">
+            <h3><i class="fa-solid fa-cloud-sun"></i> Clima actual</h3>
+            <span id="weather-city" class="data-card-sub"></span>
+          </header>
+          <div id="weather-body" class="weather-body"></div>
+        </article>
+
+        <!-- MÓDULO 5: CONVERSOR DE MONEDA -->
+        <article class="data-card currency-card">
+          <header class="data-card-head">
+            <h3><i class="fa-solid fa-money-bill-transfer"></i> Conversor de moneda</h3>
+            <span id="currency-target" class="data-card-sub"></span>
+          </header>
+          <div class="currency-body">
+            <div class="currency-row">
+              <input type="number" id="currency-amount" value="100" min="0" step="any" />
+              <select id="currency-from" aria-label="Moneda de origen">
+                <option value="COP">COP — Peso colombiano</option>
+                <option value="USD" selected>USD — Dólar</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="GBP">GBP — Libra</option>
+              </select>
+            </div>
+            <div class="currency-equals"><i class="fa-solid fa-arrow-down-long"></i></div>
+            <div class="currency-result" id="currency-result">—</div>
+            <p class="currency-note" id="currency-note"></p>
+          </div>
+        </article>
+      </div>
+
+      <!-- MÓDULO 6: ATRACCIONES TURÍSTICAS -->
+      <div class="attractions-block">
+        <div class="section-head">
+          <h2><i class="fa-solid fa-map-location-dot"></i> Atracciones turísticas</h2>
+          <p>Los lugares imperdibles de <span id="attractions-country"></span>.</p>
+        </div>
+        <div id="attractions-grid" class="attractions-grid"></div>
+      </div>
+
+      <!-- Mapa con Leaflet (punto extra) -->
+      <div class="map-block">
+        <div class="section-head">
+          <h2><i class="fa-solid fa-location-dot"></i> Ubicación en el mapa</h2>
+        </div>
+        <div id="map" class="map"></div>
+      </div>
+    </section>
+
+    <!-- ============ MÓDULO 7 y 8: FAVORITOS ============ -->
+    <section id="favorites-section" class="section">
+      <div class="section-head">
+        <h2><i class="fa-solid fa-heart"></i> Mis favoritos</h2>
+        <p>Tus destinos y atracciones guardados para soñar despierto.</p>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="fav-countries-tab"><i class="fa-solid fa-flag"></i> Destinos</button>
+        <button class="tab" data-tab="fav-places-tab"><i class="fa-solid fa-camera"></i> Atracciones</button>
+      </div>
+
+      <div id="fav-countries-tab" class="tab-panel active">
+        <div id="fav-countries-grid" class="fav-grid"></div>
+        <p class="empty-state" id="fav-countries-empty" hidden>Aún no has guardado destinos. ¡Busca un país y toca el corazón! ❤️</p>
+      </div>
+
+      <div id="fav-places-tab" class="tab-panel">
+        <div id="fav-places-grid" class="attractions-grid"></div>
+        <p class="empty-state" id="fav-places-empty" hidden>Todavía no tienes atracciones favoritas guardadas.</p>
+      </div>
+    </section>
+
+    <!-- ============ MÓDULO 9: HISTORIAL DE CONSULTAS ============ -->
+    <section id="history-section" class="section">
+      <div class="section-head">
+        <h2><i class="fa-solid fa-clock-rotate-left"></i> Historial de consultas</h2>
+        <p>Cada país que has explorado, con fecha y hora.</p>
+        <button id="clear-history" class="btn btn-ghost btn-sm"><i class="fa-solid fa-trash-can"></i> Limpiar historial</button>
+      </div>
+      <ul id="history-list" class="history-list"></ul>
+      <p class="empty-state" id="history-empty" hidden>Tu historial está vacío. Comienza explorando un destino.</p>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <p>Travel Planner Pro · Proyecto Final · Diseño Web</p>
+    <p class="footer-apis">Datos de REST Countries · Open-Meteo · Frankfurter · OpenTripMap</p>
+  </footer>
+
+  <!-- Toast de notificaciones -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- MODAL DE DETALLE DE ATRACCIÓN -->
+  <div id="place-modal" class="modal-overlay">
+    <div class="modal place-modal" role="dialog" aria-modal="true">
+      <button class="modal-close" id="place-modal-close" aria-label="Cerrar"><i class="fa-solid fa-xmark"></i></button>
+      <img id="place-modal-img" class="place-modal-img" src="" alt="" />
+      <div class="place-modal-content">
+        <span id="place-modal-cat" class="place-cat"></span>
+        <h3 id="place-modal-name"></h3>
+        <p id="place-modal-desc"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ LIBRERÍAS EXTERNAS (puntos extra) ============ -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- ============ MÓDULOS PROPIOS (orden de dependencias) ============ -->
+  <script src="js/storage.js"></script>
+  <script src="js/countries-data.js"></script>
+  <script src="js/countries.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/currency.js"></script>
+  <script src="js/tourism.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
